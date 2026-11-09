@@ -1,14 +1,29 @@
+import { useState } from 'react'
+import { api } from '../api/api'
 import Button from './Button'
 import TextArea from './TextArea'
+import { useMessageStore } from '../store/useMessageStore'
+import { data } from 'react-router-dom'
 
 const MessageField = () => {
-    const handleSubmit = (e) => {
+    const [ isLoading, setIsLoading ] = useState(false)
+    const {getMessages} = useMessageStore()
+    const handleSubmit = async (e) => {
         e.preventDefault()
+        if (isLoading || e.target.content.value.trim().length <= 3) return
         const data = {
-            content: e.target.content.value
+            content: e.target.content.value,
         }
-
-        console.log(data)
+        try {
+            setIsLoading(true)
+            const res = await api.sendMessage(data)
+            getMessages()
+            e.target.reset()
+            } catch(error) {
+                console.error(error)
+            } finally{
+                setIsLoading(false)
+            }
     }
     return (
         <div className="create-message-section">
@@ -29,5 +44,7 @@ const MessageField = () => {
         </div>
     )
 }
+
+
 
 export default MessageField
