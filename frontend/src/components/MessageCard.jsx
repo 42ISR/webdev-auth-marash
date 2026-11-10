@@ -1,22 +1,27 @@
 import { useMessageStore } from "../store/useMessageStore"
+import { api } from "../api/api"
+import { useUserStore } from "../store/useUserStore"
 
-const MessageCard = ({ likes, content, username, createdAt, id}) => {
-    const {getMessages} = useMessageStore()
+const MessageCard = ({ likes, content, username, createdAt, id, userId, likedBy}) => {
+    const { getMessages } = useMessageStore()
+    const { user } = useUserStore()
 
     const handleDelete = async () => {
         await api.deleteMessage(id)
         getMessages()
-    } 
+    }
 
     const handleLike = async () => {
         await api.likeMessage(id)
         getMessages()
-    } 
+    }
 
     const handleReport = async () => {
         await api.reportMessage(id)
         getMessages()
-    } 
+    }
+
+    const isLiked = likedBy.includes(user?.user.id)
 
     return (
         <div className="message-card">
@@ -26,18 +31,25 @@ const MessageCard = ({ likes, content, username, createdAt, id}) => {
                 <span className="message-time">{createdAt}</span>
             </div>
             <div className="message-actions">
-                <button className="action-button">
-                    <span>{likes} 💗🤍</span>
+            {user && (
+            <>
+                <button onClick={handleLike} className="action-button">
+                    <span>{likes}{isLiked ? "💗" : "🤍" } </span>
                     <span>Нравится</span>
                 </button>
-                <button className="action-button">
+                <button onClick={handleReport} className="action-button">
                     <span>🚩</span>
                     <span>Пожаловаться</span>
-                </button>
-                <button className="action-button delete">
+                </button> 
+            </>
+             )}
+
+                {user?.user.id === userId && (
+                <button onClick={handleDelete} className="action-button delete">
                     <span>❌</span>
                     <span>Удалить</span>
                 </button>
+                )}
             </div>
         </div>
     )
